@@ -1,0 +1,33 @@
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  sync-request:
+    strategy:
+      matrix:
+        sync: 
+          - gponsinet/editorconfig
+  
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: ${{matrix.sync}}
+          ssh-key: ${{secrets.DEPLOY_KEY}}
+          ref: master
+
+      - name: merge ${{github.repository}}
+        run: |
+          git config --global user.name ${{github.repository_owner}}
+          git config --global user.email ${{github.repository_owner}}@github.com
+          git remote add ${{github.repository}} git@github.com:${{github.repository}}
+          git fetch ${{github.repository}} master 
+          git merge --squash --allow-unrelated-histories ${{github.repository}}/master || true
+          git commit -m "chore(sync): ${{github.repository}}"
+          git checkout -b sync-request/${{github.repository}}
+
+      - name: push to ${{matrix.sync}}
+        run: |
+          git push -f -u origin sync-request/${{github.repository}}
