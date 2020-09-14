@@ -9,6 +9,7 @@ jobs:
       matrix:
         sync: 
           - gponsinet/editorconfig
+          - gponsinet/bot
   
     runs-on: ubuntu-latest
     steps:
